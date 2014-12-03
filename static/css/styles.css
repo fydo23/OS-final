@@ -1,0 +1,169 @@
+/**{}
+
+.red{
+	color:red;
+}
+
+.green{
+	color:green;
+}
+
+.container{
+	background-color: rgba(255,255,255,0.5);
+}
+
+.row.full{
+	height:100%;
+}
+
+.task-container{
+	height: 100%;
+	margin-top: -65px;
+	position: relative;
+	z-index: 4;
+}
+
+.left-screen, 
+.right-screen{
+	position:absolute;
+	top:0;
+	left:15px;
+	right:15px;
+	bottom:0;
+}
+
+.nav_container{
+	position:absolute;
+	top:0px;
+	right:0px;
+	left:0px;
+	height:50px;
+}
+
+.nav_container :before,
+.nav_container :after{
+	display:block !important;
+	content:initial !important;
+}
+
+.navbar a{
+	cursor:pointer;
+}
+
+.messageOut{
+    position: absolute;
+    top: 0px;
+    right:0px;
+    bottom: 40px;
+	left: 0px;
+    height: auto;
+}
+
+.messageIn{
+	position: absolute;
+	width: auto;
+	right: 0px;
+	left: 0px;
+	bottom: 0px;
+}
+
+.form-control{
+	box-shadow: 0px 0px 10px -4px #333 inset;
+}
+
+.messageOut{
+	position:absolute;
+	top:0px;
+	left:0px;
+	right:0px;
+    bottom: 40px;
+}
+
+
+.right-screen .messageOut{
+	top: 65px;
+}
+
+ul{
+	list-style: none;
+	list-style-position: outside;
+	overflow-y: scroll;
+}
+
+#tasks {
+	display: block;
+	position: absolute;
+	height: auto;
+	top: 80px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin-bottom: 0;
+}
+
+#tasks input[type="text"]{
+	border:none;
+	width:100%;
+}
+
+#tasks .text.line-through{
+	text-decoration: line-through;
+	color:#aaa;
+}
+
+#tasks li{
+	margin-bottom:2px;
+}
+
+.chat_view{
+	position:relative;
+	width:100%;
+	height:100%;
+}
+
+.chat_view .chat_container{
+	position:absolute;
+	left:0px;
+	right:0px;
+	top:15px;
+	bottom:15px;
+}
+
+#privat_chat .messageOut{
+	top:65px;
+}
+
+#users{
+	height:100%;
+	position:relative;
+}
+
+#users .form-control{
+	position:absolute;
+	top:15px;
+	bottom:6px;
+	left: 15px;
+	right: 15px;
+	height:auto;
+	width: auto;
+}
+
+#users .user{
+	cursor: pointer;
+}
+
+#logout{
+	width: 100%;
+	margin-top: 15px;
+	position: relative;
+	z-index: 5;
+}
+
+#login{
+	margin-top:200px;
+}
+
+#username{
+	height:35px;
+}
+*/

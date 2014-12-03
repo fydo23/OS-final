@@ -1,0 +1,41 @@
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-3">
+		    <button id="logout" type="button" class="btn btn-default" ng-controller="UserController"  ng-click="logout()">
+		    	<span class="glyphicon glyphicon-remove"></span>
+		    	Switch User
+		    </button>
+		    <div class="task-container">
+				<ul id="tasks" class="form-control"  ng-controller="TaskController">
+					<li>
+						<input type="text" ng-model="newTask" placeholder="Add New Task..." ng-keydown="addTask($event)">
+					</li>
+					<li ng-repeat="task in tasks">
+						<input type="checkbox" ng-model="task.checked">
+						<span class="text {{getClass(task)}}">{{task.text}}</span>
+						<button type="button" class="close" aria-hidden="true" ng-click="removeTask($index)">&times;</button>
+					</li>
+				</ul>
+		    </div>
+		</div>
+		<div class="col-md-7 animation-container" ng-switch on="appScope.activeChat">
+			<div class="left-screen"  ng-switch-when="public" >
+				<ng-include src="'view/public-chat.html'"></ng-include>
+			</div>
+			<div class="right-screen" ng-switch-when="private" >
+				<ng-include src="'view/private-chat.html'"></ng-include>
+			</div>
+		</div>
+		<div id="users" class="col-md-2" ng-controller="UserController">
+			<ul class="form-control">
+				<li class="user" ng-repeat="(username, status) in users">
+					<b ng-controller="PrivateChatController" ng-click="userClicked(username)">
+						{{$parent.username}}
+						<span ng-if="hasChatHistory(username)" class="glyphicon glyphicon-comment {{getChatColor(username)}}"></span>
+					</b>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>	

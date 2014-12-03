@@ -1,0 +1,10 @@
+<div class="chat_view" ng-controller="PublicChatController">
+	<div class="chat_container">
+		<ul class="messageOut form-control">
+			<li ng-repeat="msg in messages" on-finish-render>
+				<b>{{msg.from}}</b>: {{msg.body}}
+			</li>
+		</ul>
+		<input class="messageIn" class="form-control" type="text" ng-model="newMessage" placeholder="Message..." ng-keydown="addMessage($event)" autofocus>
+	</div>
+</div>
