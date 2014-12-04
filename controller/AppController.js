@@ -59,13 +59,23 @@ var MyApp = angular
 				$scope.filledSectors = $scope.sectors.length - $scope.freeSectors;
 			});
 
-			$scope.tasks = [
-				{name: "task 1"},
-				{name: "task 2"},
+			$scope.newTaskId = "";
+			$scope.newTaskTypes = [
+				{name:"Insert"},
+				{name:"Seak"},
+				{name:"Delete"},
+				{name:"Defrag"}
 			];
+			$scope.newTaskType = $scope.newTaskTypes[0];
 			$scope.isNewTaskFormOpen = false;
+
+			$scope.tasks = [];
 			$scope.enqueTask = function(){
-				$scope.tasks = [{name: "some new task"}].concat($scope.tasks);
+				$scope.tasks = [{id:$scope.newTaskId, type:$scope.newTaskType.name}].concat($scope.tasks);
+				console.log($scope.tasks);
+				$scope.isNewTaskFormOpen = !$scope.isNewTaskFormOpen;
+				$scope.newTaskId = "";
+				$scope.newTaskType = $scope.newTaskTypes[0];
 			};
 
 			$scope.dequeTask = function(){

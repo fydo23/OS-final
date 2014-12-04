@@ -45,11 +45,24 @@
 								
 							</button>
 							<ul id="tasks">
-								<li ng-show="isNewTaskFormOpen">
-									<button type="button" class="btn btn-default btn-xs" ng-click="enqueTask()">enque
-									</button>
+								<li ng-show="isNewTaskFormOpen" class="form-inline">
+									<div class="form-group">
+										<input class="form-control" ng-model="newTaskId" placeholder="Identifier"/>
+									</div>
+									<div class="form-group">
+									</div>
+										<label for="scheme">Action:</label>
+									<div class="form-group">
+										<select class="form-control" ng-model="newTaskType" ng-options="item.name for item in newTaskTypes"></select>
+									</div>
+									<div class="form-group">
+										<button type="button" class="btn btn-default" ng-click="enqueTask()">enque
+										</button>
+									</div>
 								</li>
-								<li ng-repeat="task in tasks"><span>{{task.name}}</span></li>
+								<li ng-repeat="task in tasks">
+									<b>{{task.id}}</b>&nbsp;&nbsp;<i>{{task.type}}</i>
+								</li>
 							</ul>
 						</div>
 					</div>

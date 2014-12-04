@@ -1,18 +1,29 @@
 #tasks{
-	padding:0px;
+	padding:0px;height:500px;
+	overflow:scroll;
 }
 #tasks li{
 	list-style: none;
 	padding: 10px;
+	height: 55px;
+	line-height: 32px;
 	border-width: 0px 1px 1px 1px;
 	border-color: #aaa;
 	border-style: solid;
+	font-size: 16px;
 }
 #tasks li:first-child{
 	border-width: 1px 1px 0px 1px;
 }
-#tasks li:nth-child(2) {
+#tasks li:nth-child(2), 
+#tasks li:last-child {
 	border-width:1px;
+}
+#task li b{
+	padding-right:10px;
+}
+#task li i{
+	color:#888;
 }
 
 #legend, #sectors{
