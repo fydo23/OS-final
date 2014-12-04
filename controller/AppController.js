@@ -1,5 +1,5 @@
 var MyApp = angular
-	.module('MyApp', ["ngAnimate"])
+	.module('MyApp', ["ngAnimate",'ui.sortable'])
 	.controller('AppController',
 		function($scope, $location, $filter){
 
@@ -68,11 +68,14 @@ var MyApp = angular
 			];
 			$scope.newTaskType = $scope.newTaskTypes[0];
 			$scope.isNewTaskFormOpen = false;
+			$scope.toggleTaskForm = function(){
+				$scope.isNewTaskFormOpen = !$scope.isNewTaskFormOpen;
+				focusNewTask();
+			}
 
 			$scope.tasks = [];
 			$scope.enqueTask = function(){
 				$scope.tasks = [{id:$scope.newTaskId, type:$scope.newTaskType.name}].concat($scope.tasks);
-				console.log($scope.tasks);
 				$scope.isNewTaskFormOpen = !$scope.isNewTaskFormOpen;
 				$scope.newTaskId = "";
 				$scope.newTaskType = $scope.newTaskTypes[0];
@@ -81,6 +84,20 @@ var MyApp = angular
 			$scope.dequeTask = function(){
 				
 			};
+
+			$scope.sortableOptions = {
+				update: function(e, ui) {
+
+				},
+				stop: function(e, ui) {
+
+				}
+			};
 		}
 	);
+
+//jquery Callbacks
+focusNewTask = function(){
+	setTimeout(function(){$('#newTaskId').focus()},10);
+}
 

@@ -1,7 +1,12 @@
+#newTask,
 #tasks{
-	padding:0px;height:500px;
+	padding:0px;
+}
+#tasks{
+	height:500px;
 	overflow:scroll;
 }
+#newTask li,
 #tasks li{
 	list-style: none;
 	padding: 10px;
@@ -12,17 +17,18 @@
 	border-style: solid;
 	font-size: 16px;
 }
-#tasks li:first-child{
-	border-width: 1px 1px 0px 1px;
-}
-#tasks li:nth-child(2), 
-#tasks li:last-child {
+#newTask li:first-child,
+#tasks li:first-child {
 	border-width:1px;
 }
-#task li b{
+#tasks li span{
+	float: right;
+	line-height: 32px;
+}
+#tasks li b{
 	padding-right:10px;
 }
-#task li i{
+#tasks li i{
 	color:#888;
 }
 

@@ -1,5 +1,8 @@
 <html ng-app="MyApp">
 	<head>
+		<title>Memo Allocatonator</title>
+		<meta name="author" content="Fyodor Wolf">
+		<meta name="description" content="An educational tool and simulator of how hardrive allocatoins are done">
 
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -38,37 +41,38 @@
 						</div>
 						<div class="form-group">
 							<label for="scheme">Tasks</label>
-							<button type="button" class="btn btn-default btn-xs" ng-click="isNewTaskFormOpen=!isNewTaskFormOpen">
+							<button id="toggleNewTasks" type="button" class="btn btn-default btn-xs" ng-click="toggleTaskForm()">
 							  <span ng-hide="isNewTaskFormOpen"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>Add Task
 							  </span>
 							  <span ng-show="isNewTaskFormOpen"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>Cancel</span>
 								
 							</button>
-							<ul id="tasks">
+							<ul id="newTask">
 								<li ng-show="isNewTaskFormOpen" class="form-inline">
 									<div class="form-group">
-										<input class="form-control" ng-model="newTaskId" placeholder="Identifier"/>
+										<input id="newTaskId" class="form-control" ng-model="newTaskId" placeholder="Identifier"/>
 									</div>
 									<div class="form-group">
-									</div>
 										<label for="scheme">Action:</label>
+									</div>
 									<div class="form-group">
 										<select class="form-control" ng-model="newTaskType" ng-options="item.name for item in newTaskTypes"></select>
 									</div>
 									<div class="form-group">
-										<button type="button" class="btn btn-default" ng-click="enqueTask()">enque
-										</button>
+										<button type="button" class="btn btn-default" ng-click="enqueTask()">enque</button>
 									</div>
 								</li>
+							</ul>
+							<ul id="tasks" ui-sortable="sortableOptions" ng-model="tasks">
 								<li ng-repeat="task in tasks">
-									<b>{{task.id}}</b>&nbsp;&nbsp;<i>{{task.type}}</i>
+									<b>{{task.id}}</b>&nbsp;&nbsp;<i>{{task.type}}<span class="glyphicon glyphicon-sort"></span></i>
 								</li>
 							</ul>
 						</div>
 					</div>
 					<div class="col-md-6">
 						<h3>Allocations</h3>
-						<ul id="sectors">
+						<ul id="sectors" >
 							<li ng-repeat="sector in sectors"><span id="sector_{{sector.index}}"class="{{sector.status}} {{sector.head}}"></span></li>
 						</ul>
 						<ul id="legend">
@@ -99,10 +103,14 @@
 			</div>
 		</div>
 
+    	<script src="static/js/jquery.js"></script>
+    	<script src="static/js/jquery-ui.min.js"></script>
+    	<script src="static/js/jqueryReady.js"></script>
+		<script src="static/js/bootstrap.min.js"></script>
+
 		<script src='static/js/angular.js'></script>
 		<script src='static/js/angular-animate.js'></script>
-    	<script src="static/js/jquery.js"></script>
-		<script src="static/js/bootstrap.min.js"></script>
+		<script src='static/js/angular-sortable.js'></script>
 
 		<script src='controller/AppController.js'></script>
 	    <script src='model/PrivateChatModel.js'></script>
