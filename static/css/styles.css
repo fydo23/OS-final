@@ -1,3 +1,9 @@
+.pull-right{
+	float:right;
+}
+.ng-invalid{
+	border-color:red;
+}
 #newTask,
 #tasks{
 	padding:0px;
@@ -21,7 +27,7 @@
 #tasks li:first-child {
 	border-width:1px;
 }
-#tasks li span{
+#tasks li span.glyphicon{
 	float: right;
 	line-height: 32px;
 }
@@ -43,36 +49,41 @@
 	border-top: 1px solid black;
 	border-left: 1px solid black;
 }
-#sectors li{
+#sectors li, #legend li{
+	list-style-type: none;
+	background-color: green;
 	height: 20px;
 	width: 20px;
 	display: inline-block;
 	list-style: none;
 	border-bottom: 1px solid black;
 	border-right: 1px solid black;
+	position: relative;
 }
-#sectors li span, #legend li span{
-	height: 19px;
-	width: 19px;
-	display: block;
+#sectors li.taken, #legend li.taken{
+	background-color: blue;
+}
+span.head{
+	display: inline-block;
+	border-radius: 10px;
+	overflow: hidden;
+	height: 10px;
+	width: 10px;
+	background-color: red;
+	top: 5px;
+	left: 5px;
+	position: absolute;
 }
 #legend li{
-	list-style-type: none;
-	display:inline-block;
 	width:70px;
-}
-#legend li span{
 	border:1px solid black;
-	display:inline-block;
+	text-align: right;
+	color:white;
+	padding-right: 15px;
 }
-li span.f{
-	background-color:green;
-}
-li span.t{
-	background-color:blue;
-}
-li span.h{
-	background-color:red;
+#legend li.hadHead{
+	background-color: white;
+	color:black;
 }
 .btn-toolbar{
 	display:inline-block;

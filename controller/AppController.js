@@ -7,19 +7,28 @@ var MyApp = angular
 			$scope.appScope = {
 				activeChat: "public"
 			};
+
+			var ALLOC_CONTIGUOUS = "Contiguous",
+				ALLOC_LINKED = "Link",
+				ALLOC_INDEXED = "Index",
+				ALLOC_FAT = "FAT";
 			$scope.allocations = [
-				{name:"Contiguous", show:true},
-				{name:"Link", show:false},
-				{name:"Index", show:false},
-				{name:"FAT", show:false}
+				{name:ALLOC_CONTIGUOUS, show:true},
+				{name:ALLOC_LINKED, show:false},
+				{name:ALLOC_INDEXED, show:false},
+				{name:ALLOC_FAT, show:false}
 			];
 			$scope.allocation = $scope.allocations[0];
 
+			var INSERT_FCFS = "FCFS",
+				INSERT_SSFT = "SSTF",
+				INSERT_SCAN = "SCAN",
+				INSERT_CSCAN= "C-SCAN";
 			$scope.insertionAlgorithms = [
-				{name:"FCFS"},
-				{name:"SSTF"},
-				{name:"SCAN"},
-				{name:"C-SCAN"}
+				{name:INSERT_FCFS},
+				{name:INSERT_SSFT},
+				{name:INSERT_SCAN},
+				{name:INSERT_CSCAN}
 			];
 			$scope.insertionAlgorithm = $scope.insertionAlgorithms[0];
 
@@ -35,38 +44,58 @@ var MyApp = angular
 				for(a=0; a<400; a++){
 					ret[a] = {
 						index:a,
-						status:"f",
-						head: ""
-					};
-					if(a > 25 && a< 67 ){
-						ret[a]['status'] = "t"
-					}
-					if(a == 284 ){
-						ret[a]['head'] = "h"
+						isFree: true,
+						nextIdx:-1 
 					}
 				}
 				return ret;
 			})();
 
 			$scope.headSector = 0;
-			$scope.freeSectors = $scope.sectors.length;
-			$scope.filledSectors = 0;
+			$scope.freeSpace = 400;
+			$scope.freeSectors = $scope.sectors;
+			$scope.freeGaps = [{index:0, size:400}];
 			$scope.fragmentation = 0;
 
 			$scope.$watch("sectors",function(){
-				$scope.headSector = $filter("filter")($scope.sectors, {head:"h"})[0].index;
-				$scope.freeSectors = $filter("filter")($scope.sectors, {status:"f"}).length;
-				$scope.filledSectors = $scope.sectors.length - $scope.freeSectors;
+				$scope.freeSectors = $filter("filter")($scope.sectors, {isFree:true});
+				freeGaps = [{ index: 0, size:0 }]
+				for(idx=0; idx<400; idx++){
+					sector = $scope.sectors[idx];
+					gap = freeGaps.pop();
+					if(sector.isFree){
+						if(gap.index == 0 && gap.size == 0){
+							gap.index = sector.index;
+						}
+						gap.size++;
+						freeGaps.push(gap);
+					}else{
+						if(gap.index == 0 && gap.size == 0){
+							freeGaps.push(gap);
+						}
+						else{
+							freeGaps.push(gap);
+							freeGaps.push({ index: 0, size:0 });
+						}
+					}
+				}
+				gap = freeGaps.pop();
+				if(gap.size != 0){
+					freeGaps.push(gap);
+				}
+				$scope.freeGaps = freeGaps;
 			});
 
+			var TASK_INSERT = "Insert", 
+				TASK_SEEK 	= "Seek", 
+				TASK_DELETE = "Delete", 
+				TASK_DEFRAG = "Defrag";
+
+			$scope.taskNames = [TASK_INSERT, TASK_SEEK, TASK_DELETE, TASK_DEFRAG];
+			$scope.newTaskName = TASK_INSERT;
+			$scope.newTaskSize = "";
 			$scope.newTaskId = "";
-			$scope.newTaskTypes = [
-				{name:"Insert"},
-				{name:"Seak"},
-				{name:"Delete"},
-				{name:"Defrag"}
-			];
-			$scope.newTaskType = $scope.newTaskTypes[0];
+
 			$scope.isNewTaskFormOpen = false;
 			$scope.toggleTaskForm = function(){
 				$scope.isNewTaskFormOpen = !$scope.isNewTaskFormOpen;
@@ -75,23 +104,71 @@ var MyApp = angular
 
 			$scope.tasks = [];
 			$scope.enqueTask = function(){
-				$scope.tasks = [{id:$scope.newTaskId, type:$scope.newTaskType.name}].concat($scope.tasks);
 				$scope.isNewTaskFormOpen = !$scope.isNewTaskFormOpen;
-				$scope.newTaskId = "";
-				$scope.newTaskType = $scope.newTaskTypes[0];
-			};
-
-			$scope.dequeTask = function(){
-				
-			};
-
-			$scope.sortableOptions = {
-				update: function(e, ui) {
-
-				},
-				stop: function(e, ui) {
-
+				if(!$scope.newTaskName == TASK_INSERT){
+					$scope.newTaskSize = "";
 				}
+				if($scope.newTaskName == TASK_DEFRAG){
+					$scope.newTaskSize = "";
+					$scope.newTaskId = "";
+				}
+				$scope.tasks = [{
+					name: $scope.newTaskName, 
+					id: $scope.newTaskId, 
+					size: $scope.newTaskSize
+				}].concat($scope.tasks);
+
+				$scope.newTaskName = TASK_INSERT;
+				$scope.newTaskSize = "";
+				$scope.newTaskId = "";
+			};
+
+			$scope.stepTask = function(){
+
+			}
+
+			$scope.$watch("")
+			$scope.doTask = function(){
+				task = $scope.tasks.pop();
+				if (task.name == TASK_INSERT){
+					if($scope.allocation.name == ALLOC_CONTIGUOUS){
+						insertIndex = -1;
+						if($scope.insertionAlgorithm.name == INSERT_FCFS){
+							for(a=0;a<$scope.freeGaps.length; a++){
+								gap = $scope.freeGaps[a];
+								if (gap.size >= task.size){
+									insertIndex = gap.index;
+									break;
+								}
+							}
+						}
+						console.log("insertIndex:"+insertIndex);
+						for(a=insertIndex; a<task.size+insertIndex; a++){
+							console.log(insertIndex, a, task.size);
+							updatedSector = {
+								index: a,
+								isFree: false,
+								nextIdx: a+1
+							}
+							if(a==task.size+insertIndex-1){
+								updatedSector['nextIdx'] = -1
+							}
+							$scope.sectors[a] = updatedSector;
+						}
+					}
+				}
+			};
+
+			$scope.finishTasks = function(){
+				while($scope.tasks.length > 0){
+					$scope.doTask();
+				}
+			}
+
+			$scope.isEmptyOrNull = function() {
+			  return function( task ) {
+			    return task.id != '' && task.name == TASK_INSERT;
+			  };
 			};
 		}
 	);
