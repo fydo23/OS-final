@@ -227,10 +227,10 @@ var MyApp = angular
 						var queue = [];
 						for(idx=0; idx<$scope.sectors.length && queue.length<requested_size; idx++){
 							if($scope.sectors[idx].isFree){
-								queue.push();
+								queue.push(idx);
 							}
 						}
-						return queue;
+						return queue.reverse();
 					}else{
 						alert("Not enough space to complete allocation.");
 						return [];
