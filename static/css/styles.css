@@ -63,11 +63,19 @@
 	border-right: 1px solid black;
 	position: relative;
 }
-#sectors li.taken, #legend li.taken{
+#sectors li.taken, 
+#legend li.taken{
 	background-color: blue;
 }
-#sectors li.allocated, #legend li.allocated{
+#sectors li.allocated, 
+#legend li.allocated{
 	background-color: purple;
+}
+#sectors li.fileSelected, 
+#legend li.fileSelected,
+#files li.fileSelected{
+	background-color: yellow;
+	color:black;
 }
 span.head{
 	display: inline-block;

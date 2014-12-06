@@ -112,7 +112,7 @@
 					<div class="col-lg-6">
 						<h3>Allocations</h3>
 						<ul id="sectors" >
-							<li ng-repeat="sector in sectors" ng-class="{'taken':!sector.isFree, 'allocated':allocationQueue.indexOf(sector.index) > -1 }" title="{{sector.index}} - isFree:{{sector.isFree}} next:{{sector.nextIdx}}">
+							<li ng-repeat="sector in sectors" ng-click="selectFile(sector.file)" ng-class="{'taken':!sector.isFree, 'fileSelected':sector.file==selectedFile , 'allocated':allocationQueue.indexOf(sector.index) > -1 }" title="{{sector.index}} - isFree:{{sector.isFree}} next:{{sector.nextIdx}}">
 								<span ng-show="sector.index==headSector" class="head"></span>
 							</li>
 						</ul>
@@ -120,6 +120,7 @@
 							<li><span class="text">Free</span></li>
 							<li class="taken"><span class="text">Used</span></li>
 							<li class="allocated"><span class="text">Allocated</span></li>
+							<li class="fileSelected"><span class="text">Selected</span></li>
 							<li class="hadHead"><span class="head"></span><span class="text">Head</span></li>
 						</ul>
 						<div class="row">
@@ -131,7 +132,7 @@
 										<span>Index</span>
 										<span>Size</span>
 									</li>
-									<li ng-repeat="file in files">
+									<li ng-repeat="file in files" ng-class="{'fileSelected': file.name==selectedFile}">
 										<span>{{file.name}}</span>
 										<span>{{file.index}}</span>
 										<span>{{file.size}}</span>

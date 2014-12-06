@@ -20,11 +20,6 @@ var MyApp = angular
 	.controller('AppController',
 		function($scope, $location, $filter){
 
-			$scope.users = {};
-			$scope.appScope = {
-				activeChat: "public"
-			};
-
 			var ALLOC_CONTIGUOUS = "Contiguous",
 				ALLOC_LINKED = "Link",
 				ALLOC_INDEXED = "Index",
@@ -66,7 +61,8 @@ var MyApp = angular
 					ret[a] = {
 						index:a,
 						isFree: true,
-						nextIdx:-1 
+						nextIdx:-1,
+						file: null
 					}
 				}
 				return ret;
@@ -75,7 +71,16 @@ var MyApp = angular
 			$scope.headSector = 0;
 			$scope.freeSpace = 400;
 			$scope.files = [];
+			$scope.selectedFile = "";
 			$scope.fragmentation = 0;
+
+			$scope.selectFile = function(file){
+				if(file && file != $scope.selectedFile){
+					$scope.selectedFile = file;
+				}else{
+					$scope.selectedFile = "";
+				}
+			}
 
 			$scope.freeSectors = $scope.sectors;
 			$scope.$watch("sectors",function(){
@@ -152,7 +157,8 @@ var MyApp = angular
 						$scope.sectors[allocation] = {
 							index: allocation,
 							isFree: false,
-							nextIdx: nextIndex
+							nextIdx: nextIndex,
+							file: $scope.tasks[0].id
 						};
 						$scope.headSector = allocation;
 						$scope.files[$scope.files.length-1].size++;
@@ -173,7 +179,8 @@ var MyApp = angular
 						$scope.sectors[$scope.headSector] = {
 							index: $scope.headSector,
 							isFree: true,
-							nextIdx: -1
+							nextIdx: -1,
+							file:null
 						};
 						if(nextIndex>=0){
 							$scope.headSector = nextIndex;
@@ -214,62 +221,78 @@ var MyApp = angular
 			* Unscoped Helper Function.
 			* Uses current scope's setting to return an insertion queue.
 			*/
-			getInsertionQueue = function(requested_size){ 
-				//get gaps.
-				var gaps = function(){
-					var freeGaps = [];
-					for(idx = 0; idx<$scope.sectors.length; idx++){
-						if($scope.sectors[idx].isFree){
-							if(freeGaps.length <= 0 || !freeGaps[freeGaps.length-1].building){
-								freeGaps.push({index:idx, size:0, building:true});
-							}
-							freeGaps[freeGaps.length-1].size++;
-						}
-						else if(freeGaps.length){
-							freeGaps[freeGaps.length-1].building = false
-						}
-					}
-					return freeGaps;
-				}();
-				var gapIndex = -1;
-				console.log(gaps);
-				//Itterate over gaps to get the gap best suited for the current setup.
-				for(index=0; index<gaps.length; index++){
-					gap = gaps[index];
-					gapDiffer = gap.size - requested_size
-					if(gapDiffer >= 0){
-						if(gapIndex < 0){
-							gapIndex = index;
-						}
-						if($scope.allocation.name == ALLOC_CONTIGUOUS && $scope.insertionAlgorithm.name == INSERTION_FIRST){
-							break;
-						}
-						if($scope.allocation.name == ALLOC_CONTIGUOUS && $scope.insertionAlgorithm.name == INSERTION_BEST){
-							prevGapDiffer = gaps[gapIndex].size - requested_size
-							if(prevGapDiffer > gapDiffer){
-								gapIndex = index
+			getInsertionQueue = function(requested_size){
+				if($scope.allocation.name == ALLOC_LINKED){
+					if($scope.freeSpace >= requested_size){
+						var queue = [];
+						for(idx=0; idx<$scope.sectors.length && queue.length<requested_size; idx++){
+							if($scope.sectors[idx].isFree){
+								queue.push();
 							}
 						}
-						if($scope.allocation.name == ALLOC_CONTIGUOUS && $scope.insertionAlgorithm.name == INSERTION_WORST){
-							prevGapDiffer = gaps[gapIndex].size - requested_size
-							if(prevGapDiffer < gapDiffer){
-								gapIndex = index
-							}
-						}
+						return queue;
+					}else{
+						alert("Not enough space to complete allocation.");
+						return [];
 					}
 				}
-				if(gapIndex < 0){
-					alert("Not enough space to complete allocation.");
-					return [];
-				}
-				//convert gap to sector queue
-				return function(gap, size){
-					var queue = [];
-					for(a=gap.index; a<gap.index+size; a++){
-						queue.push(a);
+				if($scope.allocation.name == ALLOC_CONTIGUOUS){
+					//get gaps.
+					var gaps = function(){
+						var freeGaps = [];
+						for(idx = 0; idx<$scope.sectors.length; idx++){
+							if($scope.sectors[idx].isFree){
+								if(freeGaps.length <= 0 || !freeGaps[freeGaps.length-1].building){
+									freeGaps.push({index:idx, size:0, building:true});
+								}
+								freeGaps[freeGaps.length-1].size++;
+							}
+							else if(freeGaps.length){
+								freeGaps[freeGaps.length-1].building = false
+							}
+						}
+						return freeGaps;
+					}();
+					console.log(gaps);
+					var gapIndex = -1;
+					//Itterate over gaps to get the gap best suited for the current setup.
+					for(index=0; index<gaps.length; index++){
+						gap = gaps[index];
+						gapDiffer = gap.size - requested_size
+						if(gapDiffer >= 0){
+							if(gapIndex < 0){
+								gapIndex = index;
+							}
+							if($scope.insertionAlgorithm.name == INSERTION_FIRST){
+								break;
+							}
+							if($scope.insertionAlgorithm.name == INSERTION_BEST){
+								prevGapDiffer = gaps[gapIndex].size - requested_size
+								if(prevGapDiffer > gapDiffer){
+									gapIndex = index
+								}
+							}
+							if($scope.insertionAlgorithm.name == INSERTION_WORST){
+								prevGapDiffer = gaps[gapIndex].size - requested_size
+								if(prevGapDiffer < gapDiffer){
+									gapIndex = index
+								}
+							}
+						}
 					}
-					return queue.reverse();
-				}(gaps[gapIndex], requested_size);
+					if(gapIndex < 0){
+						alert("Not enough space to complete allocation.");
+						return [];
+					}
+					//convert gap to sector queue
+					return function(gap, size){
+						var queue = [];
+						for(a=gap.index; a<gap.index+size; a++){
+							queue.push(a);
+						}
+						return queue.reverse();
+					}(gaps[gapIndex], requested_size);
+				}
 			}
 		}
 	);
