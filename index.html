@@ -132,7 +132,7 @@
 										<span>Index</span>
 										<span>Size</span>
 									</li>
-									<li ng-repeat="file in files" ng-class="{'fileSelected': file.name==selectedFile}">
+									<li ng-repeat="file in files" ng-class="{'fileSelected': file.name==selectedFile}" ng-click="selectFile(file.name)">
 										<span>{{file.name}}</span>
 										<span>{{file.index}}</span>
 										<span>{{file.size}}</span>
