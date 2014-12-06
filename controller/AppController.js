@@ -162,7 +162,6 @@ var MyApp = angular
 							isFree: true,
 							nextIdx: -1
 						};
-
 						if(nextIndex>=0){
 							$scope.headSector = nextIndex;
 						}else{
