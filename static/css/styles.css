@@ -10,7 +10,7 @@
 }
 #tasks{
 	height:500px;
-	overflow:scroll;
+	overflow-y: scroll;
 }
 #newTask li,
 #tasks li{
@@ -66,6 +66,9 @@
 #sectors li.taken, #legend li.taken{
 	background-color: blue;
 }
+#sectors li.allocated, #legend li.allocated{
+	background-color: purple;
+}
 span.head{
 	display: inline-block;
 	border-radius: 10px;
@@ -78,15 +81,23 @@ span.head{
 	position: absolute;
 }
 #legend li{
-	width:70px;
-	border:1px solid black;
+	width: inherit;
+	border: 1px solid black;
 	text-align: right;
-	color:white;
-	padding-right: 15px;
+	color: white;
+	padding: 0px 7px;
+	height: inherit;
 }
 #legend li.hadHead{
 	background-color: white;
 	color:black;
+}
+#legend li.hadHead .head{
+	margin-top: -10px;
+	top: 0px;
+	left: 0px;
+	margin: 0 5px 0 0;
+	position: relative;
 }
 .btn-toolbar{
 	display:inline-block;
@@ -107,4 +118,7 @@ span.head{
 	width:32%;
 	display:inline-block;
 	border-right:1px solid black;
+}
+#randomTaskIdButton .glyphicon{
+	line-height:20px;
 }

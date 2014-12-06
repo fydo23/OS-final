@@ -64,17 +64,17 @@
 							<ul id="newTask">
 								<li ng-show="isNewTaskFormOpen" class="form-inline">
 									<form name="newTaskFrom">
-										<div class="col-xs-2">
-											<label for="scheme">Action:</label>
-										</div>
 										<div class="col-xs-3">
 											<select class="form-control" ng-model="newTaskName" ng-options="name for name in taskNames"></select>
 										</div>
 										<div ng-show="newTaskName=='Insert'" >
-											<div class="col-xs-3">
+											<div class="col-xs-4 input-group">
 												<input class="form-control" duplicate="activeIds" ng-model="newTaskId" required placeholder="id"/>
+												<span class="input-group-btn">
+													<button id="randomTaskIdButton" class="btn btn-default" type="button" ng-click="makeRandomTaskId()"><span class="glyphicon glyphicon-random"></span></button>
+												</span>
 											</div>
-											<div  class="col-xs-2">
+											<div  class="col-xs-3">
 												<input type="number" min="0" max="{{sectors.length}}" required id="newTaskSize" class="form-control" ng-model="newTaskSize" placeholder="Size"/>
 											</div>
 											<div class="form-group pull-right">
@@ -112,13 +112,14 @@
 					<div class="col-lg-6">
 						<h3>Allocations</h3>
 						<ul id="sectors" >
-							<li ng-repeat="sector in sectors" ng-class="{taken: !sector.isFree}" title="{{sector.index}} - isFree:{{sector.isFree}} next:{{sector.nextIdx}}">
+							<li ng-repeat="sector in sectors" ng-class="{'taken':!sector.isFree, 'allocated':allocationQueue.indexOf(sector.index) > -1 }" title="{{sector.index}} - isFree:{{sector.isFree}} next:{{sector.nextIdx}}">
 								<span ng-show="sector.index==headSector" class="head"></span>
 							</li>
 						</ul>
 						<ul id="legend">
 							<li><span class="text">Free</span></li>
 							<li class="taken"><span class="text">Used</span></li>
+							<li class="allocated"><span class="text">Allocated</span></li>
 							<li class="hadHead"><span class="head"></span><span class="text">Head</span></li>
 						</ul>
 						<div class="row">

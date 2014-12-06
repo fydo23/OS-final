@@ -74,13 +74,25 @@ var MyApp = angular
 
 			$scope.headSector = 0;
 			$scope.freeSpace = 400;
-			$scope.freeSectors = $scope.sectors;
 			$scope.files = [];
 			$scope.fragmentation = 0;
 
+			$scope.freeSectors = $scope.sectors;
 			$scope.$watch("sectors",function(){
 				$scope.freeSectors = $filter("filter")($scope.sectors, {isFree:true});
 			});
+
+			$scope.activeIds = [];
+			$scope.$watch("[tasks,files]",function(){
+				activeIds = [];
+				for(a=0; a<$scope.tasks.length; a++){
+					activeIds.push($scope.tasks[a].id);
+				}
+				for(a=0; a<$scope.files.length; a++){
+					activeIds.push($scope.files[a].name);
+				}
+				$scope.activeIds = activeIds;
+			}, true);
 
 			var TASK_INSERT = "Insert", 
 				TASK_SEEK 	= "Seek", 
@@ -118,39 +130,40 @@ var MyApp = angular
 				$scope.newTaskName = TASK_INSERT;
 				$scope.newTaskSize = "";
 				$scope.newTaskId = "";
-				updateActiveIds();
 			};
 
-			var allocationQueue = null;
+			$scope.allocationQueue = [];
 			$scope.stepTask = function(){
 				if(!$scope.tasks.length) return;
-				$scope.tasks[0].isActive = true;
 				if($scope.tasks[0].name == TASK_INSERT){
-					if(allocationQueue == null){
-						allocationQueue = getInsertionQueue($scope.tasks[0].size);
-						if(allocationQueue.length){
-							$scope.files.push({name:$scope.tasks[0].id, size:0, index:allocationQueue[allocationQueue.length-1]});
+					if(!$scope.tasks[0].isActive){
+						$scope.tasks[0].isActive = true
+						$scope.allocationQueue = getInsertionQueue($scope.tasks[0].size);
+						if($scope.allocationQueue.length){
+							$scope.files.push({name:$scope.tasks[0].id, size:0, index:$scope.allocationQueue[$scope.allocationQueue.length-1]});
+							console.log("allocated", $scope.allocationQueue);
 						}
 					}
-					if(allocationQueue.length){
-						allocation = allocationQueue.pop();
+					if($scope.allocationQueue.length){
+						allocation = $scope.allocationQueue.pop();
 						nextIndex = -1;
-						if(allocationQueue.length)
-							nextIndex = allocationQueue[allocationQueue.length-1];
+						if($scope.allocationQueue.length)
+							nextIndex = $scope.allocationQueue[$scope.allocationQueue.length-1];
 						$scope.sectors[allocation] = {
 							index: allocation,
 							isFree: false,
 							nextIdx: nextIndex
 						};
-						console.log('sectorSetTo', $scope.sectors[allocation]);
 						$scope.headSector = allocation;
 						$scope.files[$scope.files.length-1].size++;
-						if(!allocationQueue.length){
-							$scope.tasks[0].isActive = false;
-						}
+					}
+					//Don't make this an else{...} This if logic relies on the first if.
+					if(!$scope.allocationQueue.length){
+						$scope.tasks[0].isActive = false;
 					}
 				}
 				if ($scope.tasks[0].name == TASK_DELETE){
+					$scope.tasks[0].isActive = true
 					file = $filter("filter")($scope.files, {name:$scope.tasks[0].id})[0];
 					if($scope.headSector != file.index && !$scope.sectors[file.index].isFree){
 						$scope.headSector = file.index;
@@ -172,16 +185,15 @@ var MyApp = angular
 				}
 				if(!$scope.tasks[0].isActive){
 					$scope.tasks.shift();	
-					allocationQueue = null;
+					// $scope.allocationQueue = [];
 				}	
 			}
 
 			$scope.doTask = function(){
-				if(!$scope.tasks.length) return;
-				$scope.tasks[0].isActive = true;
-				while($scope.tasks[0].isActive){
+				var taskLength = $scope.tasks.length;
+				if(!taskLength)return;
+				while(taskLength == $scope.tasks.length){
 					$scope.stepTask();
-					if(!$scope.tasks.length) return;
 				}
 			};
 			$scope.finishTasks = function(){
@@ -190,52 +202,74 @@ var MyApp = angular
 				}
 			}
 
-			$scope.activeIds = [];
-			updateActiveIds = function() {
-				activeIds = [];
-				for(a=0; a<$scope.tasks.length; a++){
-					activeIds.push($scope.tasks[a].id);
-				}
-				for(a=0; a<$scope.files.length; a++){
-					activeIds.push($scope.files[a].name);
-				}
-				console.log('activeIds',activeIds);
-				$scope.activeIds = activeIds;
-			};
-
-
-			getFreeGaps = function(){
-				var freeGaps = [];
-				for(idx = 0; idx<$scope.sectors.length; idx++){
-					if($scope.sectors[idx].isFree){
-						if(freeGaps.length <= 0 || !freeGaps[freeGaps.length-1].building){
-							freeGaps.push({index:idx, size:0, building:true});
-						}
-						freeGaps[freeGaps.length-1].size++;
-					}
-					else if(freeGaps.length){
-						freeGaps[freeGaps.length-1].building = false
-					}
-				}
-				return freeGaps;
+			$scope.makeRandomTaskId = function(){
+			    var text = "";
+			    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+			    for( var i=0; i < 5; i++ )
+			        text += possible.charAt(Math.floor(Math.random() * possible.length));
+				$scope.newTaskId = text;
 			}
 
 			/**
-			uses current scope layout to handle insertion queue.
+			* Unscoped Helper Function.
+			* Uses current scope's setting to return an insertion queue.
 			*/
-			getInsertionQueue = function(requested_size){
-				var gaps = getFreeGaps();
-				var queue = [];
-				for(index=0; index<gaps.length; index++){
-					if(gaps[index].size>=requested_size && $scope.allocation.name == ALLOC_CONTIGUOUS && $scope.insertionAlgorithm.name == INSERTION_FIRST){
-						for(a=gaps[index].index; a<requested_size+gaps[index].index; a++){
-							queue.push(a);
+			getInsertionQueue = function(requested_size){ 
+				//get gaps.
+				var gaps = function(){
+					var freeGaps = [];
+					for(idx = 0; idx<$scope.sectors.length; idx++){
+						if($scope.sectors[idx].isFree){
+							if(freeGaps.length <= 0 || !freeGaps[freeGaps.length-1].building){
+								freeGaps.push({index:idx, size:0, building:true});
+							}
+							freeGaps[freeGaps.length-1].size++;
 						}
-						console.log(gaps, queue);
-						return queue.reverse();
+						else if(freeGaps.length){
+							freeGaps[freeGaps.length-1].building = false
+						}
+					}
+					return freeGaps;
+				}();
+				var gapIndex = -1;
+				console.log(gaps);
+				//Itterate over gaps to get the gap best suited for the current setup.
+				for(index=0; index<gaps.length; index++){
+					gap = gaps[index];
+					gapDiffer = gap.size - requested_size
+					if(gapDiffer >= 0){
+						if(gapIndex < 0){
+							gapIndex = index;
+						}
+						if($scope.allocation.name == ALLOC_CONTIGUOUS && $scope.insertionAlgorithm.name == INSERTION_FIRST){
+							break;
+						}
+						if($scope.allocation.name == ALLOC_CONTIGUOUS && $scope.insertionAlgorithm.name == INSERTION_BEST){
+							prevGapDiffer = gaps[gapIndex].size - requested_size
+							if(prevGapDiffer > gapDiffer){
+								gapIndex = index
+							}
+						}
+						if($scope.allocation.name == ALLOC_CONTIGUOUS && $scope.insertionAlgorithm.name == INSERTION_WORST){
+							prevGapDiffer = gaps[gapIndex].size - requested_size
+							if(prevGapDiffer < gapDiffer){
+								gapIndex = index
+							}
+						}
 					}
 				}
-				return queue;
+				if(gapIndex < 0){
+					alert("Not enough space to complete allocation.");
+					return [];
+				}
+				//convert gap to sector queue
+				return function(gap, size){
+					var queue = [];
+					for(a=gap.index; a<gap.index+size; a++){
+						queue.push(a);
+					}
+					return queue.reverse();
+				}(gaps[gapIndex], requested_size);
 			}
 		}
 	);
