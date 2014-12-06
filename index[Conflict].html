@@ -41,66 +41,43 @@
 						</div>
 						<div class="form-group">
 							<label for="scheme">Tasks</label>
-							<div class="btn-toolbar" role="toolbar" aria-label="Actions">
-							  	<div class="btn-group btn-group-sm" role="group" aria-label="Toggle task form">
-									<button id="toggleNewTasks" type="button" class="btn btn-default" ng-click="toggleTaskForm()">
-									  <span ng-hide="isNewTaskFormOpen"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>Add Task
-									  </span>
-									  <span ng-show="isNewTaskFormOpen"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>Cancel</span>
-									</button>
-								</div>
-							  	<div class="btn-group btn-group-sm" role="group" aria-label="step actions">
-									<button title="step through current task" type="button" class="btn btn-default" ng-click="stepTask()">
-										<span class="glyphicon glyphicon-play"></span> Step
-									</button>
-									<button title="finish current task" type="button" class="btn btn-default" ng-click="doTask()">
-										<span class="glyphicon glyphicon-step-forward"></span> One Task
-									</button>
-									<button title="finish all tasks" type="button" class="btn btn-default" ng-click="finishTasks()">
-										<span class="glyphicon glyphicon-fast-forward"></span> All Tasks
-									</button>
-								</div>
-							</div>
+							<button id="toggleNewTasks" type="button" class="btn btn-default btn-xs" ng-click="toggleTaskForm()">
+							  <span ng-hide="isNewTaskFormOpen"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>Add Task
+							  </span>
+							  <span ng-show="isNewTaskFormOpen"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>Cancel</span>
+								
+							</button>
 							<ul id="newTask">
-								<li ng-show="isNewTaskFormOpen" class="form-inline">
-									<form name="newTaskFrom">
-										<div class="col-xs-2">
-											<label for="scheme">Action:</label>
+								<li ng-show="isNewTaskFormOpen" class="form-inline" ng-form="newTaskForm">
+									<div class="col-xs-2">
+										<label for="scheme">Action:</label>
+									</div>
+									<div class="col-xs-3">
+										<select class="form-control" ng-model="newTaskName" ng-options="name for name in taskNames"></select>
+									</div>
+									<div ng-show="newTaskName=='Insert'" class="col-xs-3">
+										<input class="form-control" ng-model="newTaskId" required placeholder="id"/>
+									</div>
+									<div ng-show="newTaskName=='Insert'"  class="col-xs-2">
+										<input type="number" min="0" max="{{sectors.length}}" required id="newTaskSize" class="form-control" ng-model="newTaskSize" placeholder="Size"/>
+									</div>
+									<div ng-show="newTaskName=='Seek' || newTaskName=='Delete'">
+										<div class="col-xs-1">
+											<label for="newTaskId">id:</label>
 										</div>
 										<div class="col-xs-3">
-											<select class="form-control" ng-model="newTaskName" ng-options="name for name in taskNames"></select>
+											<select id="newTaskId" class="form-control" ng-model="newTaskId">
+												<option ng-repeat="task in tasks|filter:isEmptyOrNull()" value="{{task.id}}">{{task.id}}</option>
+											</select>
 										</div>
-										<div ng-show="newTaskName=='Insert'" >
-											<div class="col-xs-3">
-												<input class="form-control" duplicate="activeIds" ng-model="newTaskId" required placeholder="id"/>
-											</div>
-											<div  class="col-xs-2">
-												<input type="number" min="0" max="{{sectors.length}}" required id="newTaskSize" class="form-control" ng-model="newTaskSize" placeholder="Size"/>
-											</div>
-											<div class="form-group pull-right">
-												<button type="button" class="btn btn-default" ng-disabled="newTaskFrom.$invalid" ng-click="enqueTask()">enque</button>
-											</div>
-										</div>
-										<div ng-show="newTaskName=='Seek' || newTaskName=='Delete'">
-											<div class="col-xs-1">
-												<label for="newTaskId">id:</label>
-											</div>
-											<div class="col-xs-3">
-												<select id="newTaskId" class="form-control" ng-model="newTaskId">
-													<option ng-repeat="id in activeIds" value="{{id}}">{{id}}</option>
-												</select>
-											</div>
-										</div>
-										<div ng-hide="newTaskName=='Insert'">
-											<div class="form-group pull-right">
-												<button type="button" class="btn btn-default" ng-click="enqueTask()">enque</button>
-											</div>
-										</div>
-									</form>
+									</div>
+									<div class="form-group pull-right">
+										<button type="button" class="btn btn-default" ng-click="enqueTask()">enque</button>
+									</div>
 								</li>
 							</ul>
 							<ul id="tasks" ui-sortable="sortableOptions" ng-model="tasks">
-								<li ng-repeat="task in tasks" ng-class="{active: task.isActive}">
+								<li ng-repeat="task in tasks">
 									<b>{{task.name}}</b>&nbsp;&nbsp;
 									<span ng-show="task.id != ''"><b>id:</b><i>{{task.id}}</i></span>&nbsp;&nbsp;
 									<span ng-show="task.size!=''"><b>size:</b><i>{{task.size}}</i></span>&nbsp;&nbsp;
@@ -112,7 +89,7 @@
 					<div class="col-lg-6">
 						<h3>Allocations</h3>
 						<ul id="sectors" >
-							<li ng-repeat="sector in sectors" ng-class="{taken: !sector.isFree}" title="{{sector.index}} - isFree:{{sector.isFree}} next:{{sector.nextIdx}}">
+							<li ng-repeat="sector in sectors" ng-class="{taken: !sector.isFree}">
 								<span ng-show="sector.index==headSector" class="head"></span>
 							</li>
 						</ul>
@@ -121,23 +98,24 @@
 							<li class="taken"><span class="text">Used</span></li>
 							<li class="hadHead"><span class="head"></span><span class="text">Head</span></li>
 						</ul>
-						<div class="row">
-							<div class="col-lg-5">
-								<h3>Files</h3>
-								<ul id="files">
-									<li >
-										<span>Name</span>
-										<span>Index</span>
-										<span>Size</span>
-									</li>
-									<li ng-repeat="file in files">
-										<span>{{file.name}}</span>
-										<span>{{file.index}}</span>
-										<span>{{file.size}}</span>
-									</li>
-								</ul>
+						<div class="btn-toolbar" role="toolbar" aria-label="Disk Options">
+						  	<div class="btn-group" role="group" aria-label="step actions">
+								<button title="step through current task" type="button" class="btn btn-default btn-sm" ng-click="stepTask()">
+									<span class="glyphicon glyphicon-play"></span>
+								</button>
+								<button title="finish current task" type="button" class="btn btn-default btn-sm" ng-click="doTask()">
+									<span class="glyphicon glyphicon-step-forward"></span>
+								</button>
+								<button title="finish all tasks" type="button" class="btn btn-default btn-sm" ng-click="finishTasks()">
+									<span class="glyphicon glyphicon-fast-forward"></span>
+								</button>
 							</div>
-							<div class="col-lg-7">
+						</div>
+						<div class="row">
+							<div class="col-lg-3">
+								<h3>Files</h3>
+							</div>
+							<div class="col-lg-9">
 								<h3>Overview</h3>
 								<div class="form-group">
 									<label for="seekSchemes">Sectors Filled:</label> {{sectors.length - freeSectors.length}}

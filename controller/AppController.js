@@ -1,5 +1,22 @@
 var MyApp = angular
 	.module('MyApp', ["ngAnimate",'ui.sortable'])
+	.directive('duplicate', function () {
+		return {
+		    restrict: 'A',
+		    require: 'ngModel',
+		    link: function (scope, elm, attrs, ctrl) {
+		        ctrl.$parsers.unshift(function (viewValue) {
+		            if (scope[attrs.duplicate].indexOf(viewValue) !== -1) {
+		                ctrl.$setValidity('duplicate', false);
+		                return undefined;
+		            } else {
+		                ctrl.$setValidity('duplicate', true);
+		                return viewValue;
+		            }
+		        });
+		    }
+		};
+	})
 	.controller('AppController',
 		function($scope, $location, $filter){
 
@@ -20,22 +37,26 @@ var MyApp = angular
 			];
 			$scope.allocation = $scope.allocations[0];
 
-			var INSERT_FCFS = "FCFS",
-				INSERT_SSFT = "SSTF",
-				INSERT_SCAN = "SCAN",
-				INSERT_CSCAN= "C-SCAN";
+			var INSERTION_FIRST = "First",
+				INSERTION_BEST = "Best",
+				INSERTION_WORST = "Worst";
 			$scope.insertionAlgorithms = [
-				{name:INSERT_FCFS},
-				{name:INSERT_SSFT},
-				{name:INSERT_SCAN},
-				{name:INSERT_CSCAN}
+				{name:INSERTION_FIRST},
+				{name:INSERTION_BEST},
+				{name:INSERTION_WORST},
 			];
 			$scope.insertionAlgorithm = $scope.insertionAlgorithms[0];
 
+
+			var SEEK_FCFS = "FCFS",
+				SEEK_SSFT = "SSTF",
+				SEEK_SCAN = "SCAN",
+				SEEK_CSCAN= "C-SCAN";
 			$scope.seekSchemes = [
-				{name:"First"},
-				{name:"Best"},
-				{name:"Worst"},
+				{name:SEEK_FCFS},
+				{name:SEEK_SSFT},
+				{name:SEEK_SCAN},
+				{name:SEEK_CSCAN}
 			];
 			$scope.seekScheme = $scope.seekSchemes[0];
 
@@ -54,36 +75,11 @@ var MyApp = angular
 			$scope.headSector = 0;
 			$scope.freeSpace = 400;
 			$scope.freeSectors = $scope.sectors;
-			$scope.freeGaps = [{index:0, size:400}];
+			$scope.files = [];
 			$scope.fragmentation = 0;
 
 			$scope.$watch("sectors",function(){
 				$scope.freeSectors = $filter("filter")($scope.sectors, {isFree:true});
-				freeGaps = [{ index: 0, size:0 }]
-				for(idx=0; idx<400; idx++){
-					sector = $scope.sectors[idx];
-					gap = freeGaps.pop();
-					if(sector.isFree){
-						if(gap.index == 0 && gap.size == 0){
-							gap.index = sector.index;
-						}
-						gap.size++;
-						freeGaps.push(gap);
-					}else{
-						if(gap.index == 0 && gap.size == 0){
-							freeGaps.push(gap);
-						}
-						else{
-							freeGaps.push(gap);
-							freeGaps.push({ index: 0, size:0 });
-						}
-					}
-				}
-				gap = freeGaps.pop();
-				if(gap.size != 0){
-					freeGaps.push(gap);
-				}
-				$scope.freeGaps = freeGaps;
 			});
 
 			var TASK_INSERT = "Insert", 
@@ -112,64 +108,136 @@ var MyApp = angular
 					$scope.newTaskSize = "";
 					$scope.newTaskId = "";
 				}
-				$scope.tasks = [{
+				$scope.tasks.push({
 					name: $scope.newTaskName, 
 					id: $scope.newTaskId, 
-					size: $scope.newTaskSize
-				}].concat($scope.tasks);
+					size: $scope.newTaskSize,
+					isActive: false
+				});
 
 				$scope.newTaskName = TASK_INSERT;
 				$scope.newTaskSize = "";
 				$scope.newTaskId = "";
+				updateActiveIds();
 			};
 
+			var allocationQueue = null;
 			$scope.stepTask = function(){
-
-			}
-
-			$scope.$watch("")
-			$scope.doTask = function(){
-				task = $scope.tasks.pop();
-				if (task.name == TASK_INSERT){
-					if($scope.allocation.name == ALLOC_CONTIGUOUS){
-						insertIndex = -1;
-						if($scope.insertionAlgorithm.name == INSERT_FCFS){
-							for(a=0;a<$scope.freeGaps.length; a++){
-								gap = $scope.freeGaps[a];
-								if (gap.size >= task.size){
-									insertIndex = gap.index;
-									break;
-								}
-							}
+				if(!$scope.tasks.length) return;
+				$scope.tasks[0].isActive = true;
+				if($scope.tasks[0].name == TASK_INSERT){
+					if(allocationQueue == null){
+						allocationQueue = getInsertionQueue($scope.tasks[0].size);
+						if(allocationQueue.length){
+							$scope.files.push({name:$scope.tasks[0].id, size:0, index:allocationQueue[allocationQueue.length-1]});
 						}
-						console.log("insertIndex:"+insertIndex);
-						for(a=insertIndex; a<task.size+insertIndex; a++){
-							console.log(insertIndex, a, task.size);
-							updatedSector = {
-								index: a,
-								isFree: false,
-								nextIdx: a+1
-							}
-							if(a==task.size+insertIndex-1){
-								updatedSector['nextIdx'] = -1
-							}
-							$scope.sectors[a] = updatedSector;
+					}
+					if(allocationQueue.length){
+						allocation = allocationQueue.pop();
+						nextIndex = -1;
+						if(allocationQueue.length)
+							nextIndex = allocationQueue[allocationQueue.length-1];
+						$scope.sectors[allocation] = {
+							index: allocation,
+							isFree: false,
+							nextIdx: nextIndex
+						};
+						console.log('sectorSetTo', $scope.sectors[allocation]);
+						$scope.headSector = allocation;
+						$scope.files[$scope.files.length-1].size++;
+						if(!allocationQueue.length){
+							$scope.tasks[0].isActive = false;
 						}
 					}
 				}
-			};
+				if ($scope.tasks[0].name == TASK_DELETE){
+					file = $filter("filter")($scope.files, {name:$scope.tasks[0].id})[0];
+					if($scope.headSector != file.index && !$scope.sectors[file.index].isFree){
+						$scope.headSector = file.index;
+					}
+					else{
+						var nextIndex = $scope.sectors[$scope.headSector].nextIdx;
+						$scope.sectors[$scope.headSector] = {
+							index: $scope.headSector,
+							isFree: true,
+							nextIdx: -1
+						};
 
+						if(nextIndex>=0){
+							$scope.headSector = nextIndex;
+						}else{
+							$scope.tasks[0].isActive = false;
+							$scope.files = $filter("filter")($scope.files, {name:'!'+$scope.tasks[0].id});
+						}
+					}
+				}
+				if(!$scope.tasks[0].isActive){
+					$scope.tasks.shift();	
+					allocationQueue = null;
+				}	
+			}
+
+			$scope.doTask = function(){
+				if(!$scope.tasks.length) return;
+				$scope.tasks[0].isActive = true;
+				while($scope.tasks[0].isActive){
+					$scope.stepTask();
+					if(!$scope.tasks.length) return;
+				}
+			};
 			$scope.finishTasks = function(){
 				while($scope.tasks.length > 0){
 					$scope.doTask();
 				}
 			}
 
-			$scope.isEmptyOrNull = function() {
-			  return function( task ) {
-			    return task.id != '' && task.name == TASK_INSERT;
-			  };
+			$scope.activeIds = [];
+			updateActiveIds = function() {
+				activeIds = [];
+				for(a=0; a<$scope.tasks.length; a++){
+					activeIds.push($scope.tasks[a].id);
+				}
+				for(a=0; a<$scope.files.length; a++){
+					activeIds.push($scope.files[a].name);
+				}
+				console.log('activeIds',activeIds);
+				$scope.activeIds = activeIds;
 			};
+
+
+			getFreeGaps = function(){
+				var freeGaps = [];
+				for(idx = 0; idx<$scope.sectors.length; idx++){
+					if($scope.sectors[idx].isFree){
+						if(freeGaps.length <= 0 || !freeGaps[freeGaps.length-1].building){
+							freeGaps.push({index:idx, size:0, building:true});
+						}
+						freeGaps[freeGaps.length-1].size++;
+					}
+					else if(freeGaps.length){
+						freeGaps[freeGaps.length-1].building = false
+					}
+				}
+				return freeGaps;
+			}
+
+			/**
+			uses current scope layout to handle insertion queue.
+			*/
+			getInsertionQueue = function(requested_size){
+				var gaps = getFreeGaps();
+				var queue = [];
+				for(index=0; index<gaps.length; index++){
+					if(gaps[index].size>=requested_size && $scope.allocation.name == ALLOC_CONTIGUOUS && $scope.insertionAlgorithm.name == INSERTION_FIRST){
+						for(a=gaps[index].index; a<requested_size+gaps[index].index; a++){
+							queue.push(a);
+						}
+						console.log(gaps, queue);
+						return queue.reverse();
+					}
+				}
+				return queue;
+			}
 		}
 	);
 

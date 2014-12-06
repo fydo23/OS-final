@@ -27,9 +27,6 @@
 #tasks li:first-child {
 	border-width:1px;
 }
-#tasks li.active{
-	background-color:rgb(192, 255, 192);;
-}
 #tasks li span.glyphicon{
 	float: right;
 	line-height: 32px;
@@ -90,21 +87,4 @@ span.head{
 }
 .btn-toolbar{
 	display:inline-block;
-}
-#files{
-	padding:0;
-	border-width:0 0 1px 1px;
-	border-color: black;
-	border-style: solid;
-}
-#files li{
-	list-style: none;
-	border-width: 1px 0 0 0;
-	border-color: black;
-	border-style: solid;
-}
-#files li span{
-	width:32%;
-	display:inline-block;
-	border-right:1px solid black;
 }
