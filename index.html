@@ -37,7 +37,7 @@
 						</div>
 						<div class="form-group">
 							<label for="seekSchemes" >Seek</label>&nbsp;<small><i>(Applies to consecutive seeks only.)</i></small>
-							<select id="seekSchemes" class="form-control" role="group" aria-label="Insertion Algorithm" ng-model="seekScheme" >
+							<select ng-change="sortTopSeeks()" id="seekSchemes" class="form-control" role="group" aria-label="Insertion Algorithm" ng-model="seekScheme" >
 								<option ng-repeat="scheme in seekSchemes" value="{{scheme}}">{{scheme}}</option>
 							</select>
 						</div>
@@ -85,15 +85,13 @@
 										</div>
 										<div ng-show="newTaskName=='Seek' || newTaskName=='Delete'">
 											<div class="col-xs-1">
-												<label for="newTaskId">id:</label>
+												<label for="newTaskFile">id:</label>
 											</div>
 											<div class="col-xs-3">
-												<select id="newTaskId" class="form-control" ng-model="newTaskId">
-													<option ng-repeat="file in files" value="{{file.name}}">{{file.name}}</option>
-												</select>
+												<select id="newTaskFile" class="form-control" ng-model="newTaskFile" ng-options="file.name for file in files"></select>
 											</div>
 											<div ng-show="newTaskName=='Seek'" class="col-xs-3">
-												<input type="number" min="0" max="{{newTaskId.size}}" required id="fileOffset" class="form-control" ng-model="newTaskOffset" placeholder="Offset"/>
+												<input type="number" min="0" max="{{newTaskFile.size}}" required id="fileOffset" class="form-control" ng-model="newTaskOffset" placeholder="Offset"/>
 											</div>
 											<div class="form-group pull-right">
 												<button type="button" class="btn btn-default" ng-click="enqueTask()">Enqueue</button>
@@ -105,10 +103,10 @@
 							<ul id="tasks" ui-sortable="sortableOptions" ng-model="tasks">
 								<li ng-repeat="task in tasks" ng-class="{active: task.isActive}">
 									<b>{{task.name}}</b>&nbsp;&nbsp;
-									<span ng-show="task.id != ''"><b>File:</b><i>{{task.id}}</i></span>&nbsp;&nbsp;
-									<span ng-show="task.size!='' && task.name == 'Insert'"><b>size:</b><i>{{task.size}}</i></span>&nbsp;&nbsp;
+									<span ng-show="task.file"><b>File:</b><i>{{task.file.name}}</i></span>&nbsp;&nbsp;
+									<span ng-show="task.name == 'Insert'"><b>size:</b><i>{{task.size}}</i></span>&nbsp;&nbsp;
 									<span ng-show="task.name=='Seek'"><b>Offset:</b><i>{{task.offset}}</i></span>&nbsp;&nbsp;
-									<span ng-show="task.name=='Seek' && task.isActive"><b>Seek Distance:</b><i>{{task.seekDistance}}</i></span>&nbsp;&nbsp;
+									<span ng-show="task.name=='Seek'"><b>Seek Distance:</b><i>{{task.seekDistance}}</i></span>&nbsp;&nbsp;
 									<span class="glyphicon glyphicon-sort"></span>
 								</li>
 							</ul>
@@ -117,7 +115,7 @@
 					<div class="col-lg-6">
 						<h3>Allocations</h3>
 						<ul id="sectors" >
-							<li ng-repeat="sector in sectors" ng-click="selectFile(sector.fileName)" ng-class="{'taken':!sector.isFree, 'fileSelected':sector.fileName==selectedFile , 'allocated':allocationQueue.indexOf(sector.index) > -1 }" title="{{sector.index}}">
+							<li ng-repeat="sector in sectors" ng-click="clickSector(sector)" ng-class="{'taken':!sector.isFree, 'fileSelected':sector.fileName==selectedFile , 'allocated':allocationQueue.indexOf(sector.index) > -1 }" title="{{sector.index}}">
 								<span ng-show="sector.index==headSector" class="head"></span>
 							</li>
 						</ul>
