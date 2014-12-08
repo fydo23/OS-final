@@ -1,12 +1,45 @@
 var MyApp = angular
 	.module('MyApp', ["ngAnimate",'ui.sortable'])
+	.value("globals", {  
+		ALLOC_CONTIGUOUS	: "Contiguous"	,
+		ALLOC_LINKED		: "Link"		,
+		ALLOC_INDEXED		: "Index"		,
+		ALLOC_FAT			: "FAT"			,
+		INSERTION_FIRST		: "First"		,
+		INSERTION_BEST		: "Best"		,
+		INSERTION_WORST		: "Worst"		,
+		SEEK_FCFS			: "FCFS"		,
+		SEEK_SSFT			: "SSTF"		,
+		SEEK_SCAN			: "SCAN"		,
+		SEEK_CSCAN			: "C-SCAN"		,
+		TASK_INSERT			: "Insert"		,
+		TASK_SEEK			: "Seek"		,
+		TASK_DELETE			: "Delete"		,
+		TASK_DEFRAG			: "Defrag"		,
+		SCAN_DOWN 			: 0				,
+		SCAN_UP 			: 1
+	})
 	.controller('AppController',
-		['$scope', '$location', '$filter', 'Task', 'Sector', 'File' ,function($scope, $location, $filter, Task, Sector, File){
+		['$scope', '$location', '$filter', 'globals','Task', 'Sector', 'File' ,function($scope, $location, $filter, globals, Task, Sector, File){
 
-			var ALLOC_CONTIGUOUS = "Contiguous",
-				ALLOC_LINKED = "Link",
-				ALLOC_INDEXED = "Index",
-				ALLOC_FAT = "FAT";
+			ALLOC_CONTIGUOUS	= globals.ALLOC_CONTIGUOUS;
+			ALLOC_LINKED		= globals.ALLOC_LINKED;
+			ALLOC_INDEXED		= globals.ALLOC_INDEXED;
+			ALLOC_FAT			= globals.ALLOC_FAT;
+			INSERTION_FIRST		= globals.INSERTION_FIRST;
+			INSERTION_BEST		= globals.INSERTION_BEST;
+			INSERTION_WORST		= globals.INSERTION_WORST;
+			SEEK_FCFS			= globals.SEEK_FCFS;
+			SEEK_SSFT			= globals.SEEK_SSFT;
+			SEEK_SCAN			= globals.SEEK_SCAN;
+			SEEK_CSCAN			= globals.SEEK_CSCAN;
+			TASK_INSERT			= globals.TASK_INSERT;
+			TASK_SEEK			= globals.TASK_SEEK	;
+			TASK_DELETE			= globals.TASK_DELETE;
+			TASK_DEFRAG			= globals.TASK_DEFRAG;
+			SCAN_DOWN 			= globals.SCAN_DOWN;
+			SCAN_UP 			= globals.SCAN_UP;
+
 			$scope.allocations = [
 				{name:ALLOC_CONTIGUOUS, show:true},
 				{name:ALLOC_LINKED, show:false},
@@ -15,22 +48,13 @@ var MyApp = angular
 			];
 			$scope.allocation = $scope.allocations[0];
 
-			var INSERTION_FIRST = "First",
-				INSERTION_BEST = "Best",
-				INSERTION_WORST = "Worst";
 			$scope.insertionAlgorithms = [ INSERTION_FIRST, INSERTION_BEST, INSERTION_WORST ];
 			$scope.insertionAlgorithm = $scope.insertionAlgorithms[0];
 
 
-			var SEEK_FCFS = "FCFS",
-				SEEK_SSFT = "SSTF",
-				SEEK_SCAN = "SCAN",
-				SEEK_CSCAN= "C-SCAN";
 			$scope.seekSchemes = [SEEK_FCFS, SEEK_SSFT, SEEK_SCAN, SEEK_CSCAN];
 			$scope.seekScheme = $scope.seekSchemes[0];
 
-			// var SCAN_DOWN = 0,
-			// 	SCAN_UP = 1;
 			// $scope.scanDirection = SCAN_UP;
 
 			$scope.sectors = (function(){
@@ -69,11 +93,6 @@ var MyApp = angular
 				$scope.newTaskId = text;
 			}
 
-			var TASK_INSERT = "Insert", 
-				TASK_SEEK 	= "Seek", 
-				TASK_DELETE = "Delete", 
-				TASK_DEFRAG = "Defrag";
-
 			$scope.taskNames = [TASK_INSERT, TASK_SEEK, TASK_DELETE, TASK_DEFRAG];
 			$scope.newTaskName = TASK_INSERT;
 			$scope.newTaskId = "";
@@ -91,6 +110,14 @@ var MyApp = angular
 				}
 			});
 
+			$scope.$watch('[seekScheme,headSector]', function(){
+				for(a=0; a<$scope.tasks.length; a++){
+					if($scope.tasks[a].name != TASK_SEEK) continue;
+					file = $filter('filter')($scope.files, {'name':$scope.tasks[a].id})[0];
+					$scope.tasks[a].setSeekDistance(file, $scope.headSector, $scope.seekScheme, $scope.sectors.length)
+				}
+			} ,true);
+
 			$scope.tasks = [];
 			$scope.enqueTask = function(){
 				$scope.isNewTaskFormOpen = !$scope.isNewTaskFormOpen;
@@ -102,14 +129,18 @@ var MyApp = angular
 					$scope.newTaskId = "";
 				}
 
-				$scope.tasks.push(
-					new Task(
-						$scope.newTaskName, 
-						$scope.newTaskId, 
-						$scope.newTaskSize, 
-						$scope.newTaskOffset
-					)
-				);
+				var task = new Task(
+					$scope.newTaskName, 
+					$scope.newTaskId, 
+					$scope.newTaskSize, 
+					$scope.newTaskOffset
+				)
+				if(task.name == TASK_SEEK){
+					file = $filter('filter')($scope.files, {'name':task.id})[0];
+					task.setSeekDistance(file, $scope.headSector, $scope.seekScheme, $scope.sectors.length)
+
+				}
+				$scope.tasks.push(task);
 
 				$scope.newTaskName = TASK_INSERT;
 				// $scope.newTaskId = "";
@@ -154,53 +185,9 @@ var MyApp = angular
 							$scope.tasks[0].isActive = true;
 						}
 						else{
-							var getSeekDistance = function(task){
-								file = $filter('filter')($scope.files, { name : task.id } )[0];
-								if($scope.seekScheme == SEEK_SSFT){
-									var seekIndex = file.index; //ALLOC_INDEXED && ALLOC_LINKED && 
-									if(file.allocationType == ALLOC_CONTIGUOUS){
-										seekIndex = file.index + task.offset;
-									}
-									else if(file.allocationType == ALLOC_FAT){
-										seekIndex = file.allocationTable[task.offset];
-									}
-									return Math.abs($scope.headSector - seekIndex);
-								}
-								else if($scope.seekScheme == SEEK_SCAN){
-									headPosition = $scope.headPosition;
-									scanDirection = SCAN_UP;
-									seekDistance = 0;
-									while(headPosition != file.index){
-										if( headPosition == $scope.sectors.length - 1){
-											scanDirection = SCAN_DOWN;
-										}
-										else if( headPosition == 0){
-											scanDirection = SCAN_UP;
-										}
-										if(scanDirection == SCAN_UP){
-											headPosition++;
-										}
-										if(scanDirection == SCAN_DOWN){
-											headPosition--;
-										}
-										seekDistance++;
-									}
-									return seekDistance;
-								}else if($scope.seekScheme == SEEK_CSCAN){
-									headPosition = $scope.headPosition;
-									scanDirection = SCAN_UP;
-									seekDistance = 0;
-									while(headPosition != file.index){
-										headPosition = (headPosition + 1) % $scope.sectors.length;
-										seekDistance++;
-									}
-									return seekDistance;
-								}
-							}
 							for(idx = 0; idx<$scope.tasks.length; idx++){
 								task = $scope.tasks[idx];
 								if(task.name != TASK_SEEK) break;
-								$scope.tasks[idx].seekDistance = getSeekDistance(task);
 								$scope.tasks[idx].isActive = true;
 							}
 							activatedSeeks = $filter('filter')($scope.tasks, {isActive:true});
