@@ -77,6 +77,10 @@
 	background-color: yellow;
 	color:black;
 }
+#files li.fatLookup{
+	background-color: orange;
+	color:black;
+}
 span.head{
 	display: inline-block;
 	border-radius: 10px;

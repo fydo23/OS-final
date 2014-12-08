@@ -199,6 +199,16 @@ var MyApp = angular
 				console.log(sector);
 				$scope.selectFile(sector.fileName);
 			}
+			$scope.clickFile = function(file){
+				console.log(file);
+				$scope.selectFile(file.name);
+			}
+			$scope.clickTask = function(task){
+				console.log(task);
+				if(task.file){
+					$scope.selectFile(task.file.name);
+				}
+			}
 
 			$scope.allocationQueue = [];
 			$scope.stepTask = function(){
@@ -218,7 +228,7 @@ var MyApp = angular
 					if($scope.allocationQueue.length){
 						$scope.headSector = $scope.allocationQueue.pop();
 						if($scope.allocationQueue.length)
-							$scope.sectors[$scope.headSector].nextIdx = $scope.allocationQueue[$scope.allocationQueue.length-1];
+							$scope.sectors[$scope.headSector].nextIndex = $scope.allocationQueue[$scope.allocationQueue.length-1];
 						$scope.sectors[$scope.headSector].isFree = false;
 						$scope.sectors[$scope.headSector].fileName = $scope.tasks[0].file.name;
 					}
@@ -242,7 +252,7 @@ var MyApp = angular
 					if(file.allocationType == ALLOC_CONTIGUOUS){
 						if (task.step == 0){
 							$scope.headSector = task.seekIndex;
-							task.step = task.step.step+1
+							task.step = task.step + 1;
 						}else{
 							task.isActive = false;
 						}
@@ -250,11 +260,12 @@ var MyApp = angular
 					else if(file.allocationType == ALLOC_FAT){
 						if(task.step == 0){
 							file.is_doing_FAT_lookup = true;
-							task.step = task.step.step+1
+							task.step = task.step + 1;
 						}
 						else if(task.step == 1){
 							file.is_doing_FAT_lookup = false;
-							$scope.headSector = file.allocationTable[$scope.tasks[0].offset];
+							$scope.headSector = file.allocationTable[task.offset];
+							task.step = task.step + 1;
 						}else{
 							task.isActive = false;
 						}
@@ -276,7 +287,6 @@ var MyApp = angular
 							task.step = task.step + 1;
 						}
 						else if(task.step == 1){
-							console.log($scope.sectors[$scope.headSector].fileParts);
 							$scope.headSector = $scope.sectors[$scope.headSector].fileParts[task.offset];
 							task.step = task.step + 1;
 						}else{
@@ -291,7 +301,7 @@ var MyApp = angular
 						$scope.headSector = file.index;
 					}
 					else{
-						var nextIndex = $scope.sectors[$scope.headSector].nextIdx;
+						var nextIndex = $scope.sectors[$scope.headSector].nextIndex;
 						
 						$scope.sectors[$scope.headSector] = new Sector($scope.headSector);
 

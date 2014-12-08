@@ -4,7 +4,7 @@ MyApp.factory('Sector',function(){
 			this.isFree = true;
 			this.fileName = null; 	//used for high-lighting file selection.
 			this.fileParts = []; 	//used for indexed allocation SEEK. (ony set in a file's first sector.)
-			this.nextIdx = -1; 		//used for linked SEEK.
+			this.nextIndex = -1; 		//used for linked SEEK.
 		};
 		return (Sector);
 	})

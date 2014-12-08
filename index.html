@@ -101,12 +101,12 @@
 								</li>
 							</ul>
 							<ul id="tasks" ui-sortable="sortableOptions" ng-model="tasks">
-								<li ng-repeat="task in tasks" ng-class="{active: task.isActive}">
+								<li ng-repeat="task in tasks" ng-class="{active: task.isActive}" ng-click="clickTask(task)">
 									<b>{{task.name}}</b>&nbsp;&nbsp;
 									<span ng-show="task.file"><b>File:</b><i>{{task.file.name}}</i></span>&nbsp;&nbsp;
 									<span ng-show="task.name == 'Insert'"><b>size:</b><i>{{task.size}}</i></span>&nbsp;&nbsp;
 									<span ng-show="task.name=='Seek'"><b>Offset:</b><i>{{task.offset}}</i></span>&nbsp;&nbsp;
-									<span ng-show="task.name=='Seek'"><b>Seek Distance:</b><i>{{task.seekDistance}}</i></span>&nbsp;&nbsp;
+									<span ng-show="task.name=='Seek' && !task.isActive"><b>Seek Distance:</b><i>{{task.seekDistance}}</i></span>&nbsp;&nbsp;
 									<span class="glyphicon glyphicon-sort"></span>
 								</li>
 							</ul>
@@ -136,7 +136,7 @@
 										<span>Size</span>
 										<span>Type</span>
 									</li>
-									<li ng-repeat="file in files" ng-class="{'fileSelected': file.name==selectedFile}" ng-click="selectFile(file.name)">
+									<li ng-repeat="file in files" ng-class="{'fileSelected': file.name==selectedFile, 'fatLookup':file.is_doing_FAT_lookup}" ng-click="clickFile(file)">
 										<span>{{file.name}}</span>
 										<span>{{file.index}}</span>
 										<span>{{file.size}}</span>
