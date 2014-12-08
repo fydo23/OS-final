@@ -65,11 +65,11 @@
 							</div>
 							<ul id="newTask">
 								<li ng-show="isNewTaskFormOpen" class="form-inline">
-									<form name="newTaskFrom">
-										<div class="col-xs-3">
-											<select class="form-control" ng-model="newTaskName" ng-options="name for name in taskNames"></select>
-										</div>
-										<div ng-show="newTaskName=='Insert'">
+									<div class="col-xs-3">
+										<select class="form-control" ng-model="newTaskName" ng-options="name for name in taskNames"></select>
+									</div>
+									<div ng-show="newTaskName=='Insert'">
+										<form name="newInsertTaskFrom">
 											<div class="col-xs-4 input-group">
 												<input class="form-control" ng-model="newTaskId" required duplicate="newTaskId" placeholder="id"/>
 												<span class="input-group-btn">
@@ -82,22 +82,22 @@
 											<div class="form-group col-xs-2">
 												<button type="button" class="btn btn-default" ng-disabled="newTaskFrom.$invalid" ng-click="enqueTask()">Add</button>
 											</div>
-										</div>
-										<div ng-show="newTaskName=='Seek' || newTaskName=='Delete'">
+										</form>
+									</div>
+									<div ng-show="newTaskName=='Seek' || newTaskName=='Delete'">
 											<div class="col-xs-4">
 												<select id="newTaskFile" class="form-control" ng-model="newTaskFile" ng-options="file.name for file in files"></select>
 											</div>
 											<div class="col-xs-3">
-												<input ng-show="newTaskName=='Seek'" type="number" min="0" max="{{newTaskFile.size}}" title="offset" required id="fileOffset" class="form-control" ng-model="newTaskOffset" placeholder="Offset"/>
+												<input ng-show="newTaskName=='Seek'" type="number" min="0" max="{{newTaskFile.size - 1}}" title="offset" required id="fileOffset" class="form-control" ng-model="newTaskOffset" placeholder="Offset"/>
 											</div>
+									</div>
+									<div ng-show="newTaskName=='Defrag'" class="col-xs-7"></div>
+									<div ng-hide="newTaskName=='Insert'">
+										<div class="form-group col-xs-2">
+											<button type="button" class="btn btn-default" ng-click="enqueTask()">Add</button>
 										</div>
-										<div ng-show="newTaskName=='Defrag'" class="col-xs-7"></div>
-										<div ng-hide="newTaskName=='Insert'">
-											<div class="form-group col-xs-2">
-												<button type="button" class="btn btn-default" ng-click="enqueTask()">Add</button>
-											</div>
-										</div>
-									</form>
+									</div>
 								</li>
 							</ul>
 							<ul id="tasks" ui-sortable="sortableOptions" ng-model="tasks">

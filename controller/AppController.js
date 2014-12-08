@@ -145,9 +145,9 @@ var MyApp = angular
 
 			$scope.$watch('newTaskId',function(){
 				if($filter('filter')($scope.files, {name:$scope.newTaskId}).length){
-					$scope.newTaskFrom.$setValidity('unique', false);
+					$scope.newInsertTaskFrom.$setValidity('unique', false);
 				}else{
-					$scope.newTaskFrom.$setValidity('unique', true);
+					$scope.newInsertTaskFrom.$setValidity('unique', true);
 				}
 			});
 
