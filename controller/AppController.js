@@ -95,13 +95,15 @@ var MyApp = angular
 
 			// $scope.scanDirection = SCAN_UP;
 
-			$scope.sectors = (function(){
+			function getClearSectors(){
 				ret = [];
 				for(a=0; a<400; a++){
 					ret[a] = new Sector(a);
 				}
 				return ret;
-			})();
+			};
+
+			$scope.sectors = getClearSectors();
 
 			$scope.headSector = 0;
 			$scope.freeSpace = 400;
@@ -157,8 +159,9 @@ var MyApp = angular
 			} ,true);
 
 			$scope.tasks = [];
-			$scope.enqueTask = function(){
-				$scope.isNewTaskFormOpen = !$scope.isNewTaskFormOpen;
+			$scope.enqueTask = function(passive){
+				if(!passive)
+					$scope.isNewTaskFormOpen = !$scope.isNewTaskFormOpen;
 
 				var file;
 				if($scope.newTaskName == TASK_INSERT){
@@ -217,7 +220,7 @@ var MyApp = angular
 					if(!$scope.tasks[0].isActive){
 						$scope.tasks[0].isActive = true
 						$scope.allocationQueue = getInsertionQueue($scope.tasks[0].file.size);
-						if($scope.allocationQueue.length){;
+						if($scope.allocationQueue.length){
 							allocationQueue = $scope.allocationQueue.slice().reverse();
 							$scope.tasks[0].file.write($scope.allocation.name, allocationQueue);
 							$scope.files.push( $scope.tasks[0].file);
@@ -314,6 +317,42 @@ var MyApp = angular
 						}
 					}
 				}
+				if ($scope.tasks[0].name == TASK_DEFRAG){
+
+					var files 		=  $scope.files.slice();
+					var tasks 		=  $scope.tasks.slice();
+					var newTaskName =  $scope.newTaskName ;
+					var newTaskFile =  $scope.newTaskFile ;
+					var newTaskId 	=  $scope.newTaskId   ;
+					var newTaskSize =  $scope.newTaskSize ;
+					var allocation  =  $scope.allocation  ;
+
+					$scope.tasks = [];
+
+					for(fileIdx = 0; fileIdx<files.length; fileIdx++){
+						$scope.newTaskName = TASK_DELETE;
+						$scope.newTaskFile = files[fileIdx];
+						$scope.enqueTask(true);
+					}
+					$scope.finishTasks();
+
+					for(fileIdx = 0; fileIdx<files.length; fileIdx++){
+						$scope.newTaskName = TASK_INSERT;
+						$scope.newTaskId = files[fileIdx].name;
+						$scope.newTaskSize = files[fileIdx].size;
+						allocation = $filter('filter')($scope.allocations, {name: files[fileIdx].allocationType})[0];
+						$scope.allocation = allocation;
+						$scope.enqueTask(true);
+						$scope.doTask();
+					}
+					$scope.tasks 		= tasks 		;
+					$scope.newTaskName  = newTaskName 	;
+					$scope.newTaskFile  = newTaskFile 	;
+					$scope.newTaskId    = newTaskId 	;
+					$scope.newTaskSize  = newTaskSize 	;
+					$scope.allocation   = allocation  	;
+				}
+
 				if(!$scope.tasks[0].isActive){
 					$scope.tasks.shift();	
 					// $scope.allocationQueue = [];

@@ -79,22 +79,22 @@
 											<div  class="col-xs-3">
 												<input type="number" min="1" max="{{freeSectors.length}}" required id="newTaskSize" class="form-control" ng-model="newTaskSize" placeholder="Size"/>
 											</div>
-											<div class="form-group pull-right">
-												<button type="button" class="btn btn-default" ng-disabled="newTaskFrom.$invalid" ng-click="enqueTask()">Enqueue</button>
+											<div class="form-group col-xs-2">
+												<button type="button" class="btn btn-default" ng-disabled="newTaskFrom.$invalid" ng-click="enqueTask()">Add</button>
 											</div>
 										</div>
 										<div ng-show="newTaskName=='Seek' || newTaskName=='Delete'">
-											<div class="col-xs-1">
-												<label for="newTaskFile">id:</label>
-											</div>
-											<div class="col-xs-3">
+											<div class="col-xs-4">
 												<select id="newTaskFile" class="form-control" ng-model="newTaskFile" ng-options="file.name for file in files"></select>
 											</div>
-											<div ng-show="newTaskName=='Seek'" class="col-xs-3">
-												<input type="number" min="0" max="{{newTaskFile.size}}" required id="fileOffset" class="form-control" ng-model="newTaskOffset" placeholder="Offset"/>
+											<div class="col-xs-3">
+												<input ng-show="newTaskName=='Seek'" type="number" min="0" max="{{newTaskFile.size}}" title="offset" required id="fileOffset" class="form-control" ng-model="newTaskOffset" placeholder="Offset"/>
 											</div>
-											<div class="form-group pull-right">
-												<button type="button" class="btn btn-default" ng-click="enqueTask()">Enqueue</button>
+										</div>
+										<div ng-show="newTaskName=='Defrag'" class="col-xs-7"></div>
+										<div ng-hide="newTaskName=='Insert'">
+											<div class="form-group col-xs-2">
+												<button type="button" class="btn btn-default" ng-click="enqueTask()">Add</button>
 											</div>
 										</div>
 									</form>
