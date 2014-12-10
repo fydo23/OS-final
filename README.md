@@ -5,7 +5,7 @@ This project is an educational tool that could be used to learn about different 
 
 ###Public URL###
 
-Short-Link: http://goo.gl/wcRec8    
-Long-Link: https://13d413921ceb279d1fc5c909bd6effe6c1590b0f-www.googledrive.com/host/0B5aodp9xzYQibEd1M2I1ZEJSX28/index.html    
+Short-Link: http://goo.gl/kIVtpY    
+Long-Link: http://www.googledrive.com/host/0B5aodp9xzYQibGF0YWpEdWRWWk0/index.html    
 
 __@author__: Fyodor Wolf <fwolf@bu.edu>

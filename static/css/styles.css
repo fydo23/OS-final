@@ -1,3 +1,7 @@
+form{
+	padding: 0;
+	margin: 0;
+}
 .pull-right{
 	float:right;
 }
@@ -77,6 +81,10 @@
 	background-color: yellow;
 	color:black;
 }
+#files li.fatLookup{
+	background-color: orange;
+	color:black;
+}
 span.head{
 	display: inline-block;
 	border-radius: 10px;
@@ -118,14 +126,18 @@ span.head{
 }
 #files li{
 	list-style: none;
-	border-width: 1px 0 0 0;
+	border-width: 1px 1px 0 0;
 	border-color: black;
 	border-style: solid;
 }
 #files li span{
-	width:32%;
+	width:20%;
 	display:inline-block;
 	border-right:1px solid black;
+}
+#files li span:last-child {
+	width:30%;
+	border-right-width: 0px;
 }
 #randomTaskIdButton .glyphicon{
 	line-height:20px;
