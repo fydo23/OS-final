@@ -1,43 +1,5 @@
 var MyApp = angular
-	.module('MyApp', ["ngAnimate",'ui.sortable'])
-	// .directive('validateRange', ['$parse', function($parse) {
-
-	//     function link($scope, $element, $attrs, ngModel) {
-	//         var attrRange, range = [];
-
-	//         function validate(value) {
-	//             var validMin = true, validMax = true;
-	//             if (typeof range[0] === 'number') {
-	//                 ngModel.$setValidity('min', value >= range[0]);
-	//                 validMin = value >= range[0];
-	//             }
-	//             if (typeof range[1] === 'number') {
-	//                 ngModel.$setValidity('max', value <= range[1]);
-	//                 validMax = value <= range[1];
-	//             }
-	//             return validMin && validMax ? value : undefined;
-	//         }
-
-	//         attrRange = $attrs.validateRange.split(/,/);
-
-	//         range[0] = $parse(attrRange[0] || '')($scope);
-	//         range[1] = $parse(attrRange[1] || '')($scope);
-
-	//         $scope.$watchCollection('[' + $attrs.validateRange + ']', function(values) {
-	//             range = values;
-	//             validate(ngModel.$viewValue);
-	//         });
-
-	//         ngModel.$parsers.unshift(validate);
-	//         ngModel.$formatters.unshift(validate);
-	//     }
-
-	//     return {
-	//         link: link,
-	//         require: 'ngModel'
-	//     };
-
-	// }])
+	.module('MyApp', ['ui.sortable'])
 	.value("globals", {  
 		ALLOC_CONTIGUOUS	: "Contiguous"	,
 		ALLOC_LINKED		: "Link"		,
